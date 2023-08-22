@@ -1,0 +1,33 @@
+{{ define "login" }}
+    <div class="container mt-5">
+        {{ if .success }}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ range $i, $msg := .success }}
+                {{ $msg }} <br/>
+                {{ end }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{ end }}
+        {{ if .error }}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ range $i, $msg := .error }}
+                {{ $msg }} <br/>
+                {{ end }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {{ end }}
+        <h2>Login</h2>
+        <form action="#" method="POST">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+                    <p>Don't have an account? <a href="/register">Register here</a>.</p>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+{{ end }}

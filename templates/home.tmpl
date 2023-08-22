@@ -1,0 +1,113 @@
+{{ define "home" }}
+  <div class="container mt-5">
+    {{ if .success }}
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ range $i, $msg := .success }}
+            {{ $msg }} <br/>
+            {{ end }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {{ end }}
+    {{ if .error }}
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {{ range $i, $msg := .error }}
+            {{ $msg }} <br/>
+            {{ end }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {{ end }}
+    <div class="row mb-5">
+      <div class="col">
+        <h2>Clock In / Clock Out</h2>
+      </div>
+      <div class="col text-end">
+        <a href="/logout" class="btn btn-info" id="logoutBtn">Logout</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div id="cameraContainer" class="text-center">
+          <video id="cameraFeed" class="w-100" autoplay></video>
+          <button id="captureBtn" class="btn btn-primary mt-3">Take Photo</button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div id="imageContainer" class="text-center">
+          <img id="capturedImage" class="img-fluid mb-3" alt="Captured Image" src="/public/img/capture_image.png">
+          <form action="/clock-in" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <input type="text" class="form-control" id="e-id" name="e-id" value={{.employee.ID }} hidden>
+              <input type="file" class="form-control" id="clockin-image" name="clockin-image" hidden>
+            </div>
+            <button id="clockInBtn" class="btn btn-success">Clock In</button>
+          </form>
+          <form action="/clock-out" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <input type="text" class="form-control" id="e-id" name="e-id" value={{.employee.ID }} hidden>
+              <input type="file" class="form-control" id="clockout-image" name="clockout-image" hidden>
+            </div>
+            <button id="clockOutBtn" class="btn btn-danger">Clock Out</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+
+    const cameraFeed = document.getElementById('cameraFeed');
+    const captureBtn = document.getElementById('captureBtn');
+    const capturedImage = document.getElementById('capturedImage');
+    const clockInBtn = document.getElementById('clockInBtn');
+    const clockOutBtn = document.getElementById('clockOutBtn');
+    var clockInImage = document.getElementById('clockin-image');
+    var clockOutImage = document.getElementById('clockout-image');
+    var id = document.getElementById('e-id');
+
+    let stream;
+    clockInBtn.style.display = "none";
+    clockOutBtn.style.display = "none";
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((streamObj) => {
+        stream = streamObj;
+        cameraFeed.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error('Error accessing camera:', error);
+      });
+
+    captureBtn.addEventListener('click', async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraFeed.videoWidth;
+      canvas.height = cameraFeed.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+
+
+      canvas.toBlob(async (blob) => {
+        const dataTransfer = new DataTransfer();
+
+        const fileName = 'clock-in-image_' + id.value + "_" + new Date().toLocaleDateString() + '.jpg';
+
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        dataTransfer.items.add(file);
+        clockInImage.files = dataTransfer.files;
+        clockOutImage.files = dataTransfer.files;
+
+        capturedImage.src = URL.createObjectURL(blob);
+
+      }, 'image/jpeg');
+
+      clockInBtn.style.display = 'inline-block';
+      clockOutBtn.style.display = 'inline-block';
+    });
+
+    // Clean up the camera stream when the page is closed
+    window.addEventListener('beforeunload', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    });
+  </script>
+{{ end }}
