@@ -58,7 +58,7 @@ func (server *Server) Run(addr string) {
 
 func (server *Server) initializeDB(dbConfig DBConfig) {
 	var err error
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbConfig.DBUser, dbConfig.DBPassword, dbConfig.DBHost, dbConfig.DBPort, dbConfig.DBName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local", dbConfig.DBUser, dbConfig.DBPassword, dbConfig.DBHost, dbConfig.DBPort, dbConfig.DBName)
 	server.DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
